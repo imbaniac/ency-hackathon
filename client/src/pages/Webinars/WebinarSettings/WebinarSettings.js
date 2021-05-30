@@ -2,34 +2,72 @@ import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router";
 import Hls from "hls.js";
 import styled from "styled-components";
+import { Client, PrivateKey, ThreadID } from "@textile/hub";
 import UserContext from "../../../utils/UserContext";
 import { getStream } from "../../../api/stream";
+import Discussion from "../WebinarPublic/Discussion";
 
-const CreateWebinar = () => {
+async function getInfo(client, threadID) {
+  return await client.getDBInfo(threadID);
+}
+
+async function joinFromInfo(client, info) {
+  return await client.joinFromInfo(info);
+}
+
+const keyInfo = {
+  key: process.env.KEY,
+  secret: process.env.SECRET,
+};
+
+export const getIdentity = async () => {
+  /** Restore any cached user identity first */
+  const cached = localStorage.getItem("user-private-identity");
+  if (cached !== null) {
+    /** Convert the cached identity string to a PrivateKey and return */
+    return PrivateKey.fromString(cached);
+  }
+  /** No cached identity existed, so create a new one */
+  const identity = await PrivateKey.fromRandom();
+  /** Add the string copy to the cache */
+  localStorage.setItem("user-private-identity", identity.toString());
+  /** Return the random identity */
+  return identity;
+};
+
+export async function authorize(key, identity) {
+  const client = await Client.withKeyInfo(key);
+  await client.getToken(identity);
+  return client;
+}
+
+const WebinarSettings = () => {
   const [webinar, setWebinar] = useState({});
   const { apiKey } = useContext(UserContext);
   const params = useParams();
 
   useEffect(() => {
     (async () => {
-      const webinar = await getStream(apiKey, params.id);
-      setWebinar(webinar.data);
-    })();
-  }, [apiKey, params.id]);
+      const threadId = localStorage.getItem(params.id);
+      console.log("CURRENT THREAD", threadId);
 
-  useEffect(() => {
+      const user = await getIdentity();
+      const client = await authorize(keyInfo, user);
+
+      const info = await getInfo(client, ThreadID.fromString(threadId));
+      console.log("CURRENT INFO", info);
+    })();
+
     let interval;
     if (params.id) {
-      interval = setInterval(async () => {
-        const webinar = await getStream(apiKey, params.id);
-        setWebinar(webinar.data);
-      }, 5000);
+      fetchWebinar();
+      interval = setInterval(fetchWebinar, 5000);
     }
 
     return () => {
       clearInterval(interval);
     };
-  });
+  }, [params.id]);
 
   useEffect(() => {
     if (webinar.playbackId) {
@@ -43,6 +81,11 @@ const CreateWebinar = () => {
     }
   }, [webinar]);
 
+  const fetchWebinar = async () => {
+    const webinar = await getStream(apiKey, params.id);
+    setWebinar(webinar.data);
+  };
+
   return (
     <Container>
       <Header>
@@ -54,10 +97,14 @@ const CreateWebinar = () => {
         <div>Stream key: {webinar.streamKey}</div>
       </Info>
       <Video id="video" controls />
-      <Input
-        disabled
-        value={`${window.location.origin}/view/${webinar.playbackId}`}
-      />
+      <label>
+        Share link to your guests
+        <Input
+          disabled
+          value={`${window.location.origin}/view/${webinar.playbackId}`}
+        />
+      </label>
+      <Discussion />
     </Container>
   );
 };
@@ -97,7 +144,8 @@ const Status = styled.span`
 const Input = styled.input`
   padding: 20px;
   margin-top: 50px;
+  margin-left: 10px;
   width: 600px;
 `;
 
-export default CreateWebinar;
+export default WebinarSettings;

@@ -5,11 +5,11 @@ const apiInstance = axios.create({
   timeout: 10000,
 });
 
-export const createStream = (apiKey) => {
+export const createStream = (apiKey, name = "New Webinar") => {
   return apiInstance.post(
     "/stream",
     {
-      name: "test_stream",
+      name,
       profiles: [
         {
           name: "720p",
