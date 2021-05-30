@@ -1,0 +1,16 @@
+html,
+body,
+#root {
+  all: unset;
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  background: #eee;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+}
