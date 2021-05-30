@@ -4,6 +4,15 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      (function (d, s) {
+        var js = d.createElement(s),
+          sc = d.getElementsByTagName(s)[0];
+        js.src =
+          "https://paywall.unlock-protocol.com/static/unlock.latest.min.js";
+        sc.parentNode.insertBefore(js, sc);
+      })(document, "script");
+    </script>
     <meta name="theme-color" content="#000000" />
     <meta
       name="description"
@@ -24,7 +33,7 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>React App</title>
+    <title>Ency Webinar</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
@@ -39,5 +48,29 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
+    <script>
+      const unlockProtocolConfig = {
+        network: 4, // Network ID (1 is for mainnet, 4 for rinkeby... etc)
+        locks: {
+          "0x6C9C94922e01a4541E49007a15fcaE07E7365203": {
+            // 0xabc is the address of a lock.
+            name: "Free",
+          },
+          icon: "https://app.unlock-protocol.com/static/images/svg/default.svg",
+          callToAction: {
+            default:
+              "This content is locked. Pay with cryptocurrency to access it!",
+            expired:
+              "This is what is shown when the user had a key which is now expired",
+            pending:
+              "This is the message shown when the user sent a transaction to purchase a key which has not be confirmed yet",
+            confirmed:
+              "This is the message shown when the user has a confirmed key",
+            noWallet:
+              "This is the message shown when the user does not have a crypto wallet which is required...",
+          },
+        },
+      };
+    </script>
   </body>
 </html>

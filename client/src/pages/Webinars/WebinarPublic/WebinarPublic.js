@@ -43,6 +43,27 @@ const WebinarPublic = () => {
   const params = useParams();
 
   useEffect(() => {
+    const script = document.createElement("script");
+    script.src =
+      "https://paywall.unlock-protocol.com/static/unlock.latest.min.js";
+    script.async = true;
+    document.head.appendChild(script);
+
+    window.addEventListener("unlockProtocol.status", function (e) {
+      const state = e.detail;
+      console.log("CALLED", state);
+      // the state is a string whose value can either be 'unlocked' or 'locked'...
+      // If state is 'unlocked': implement code here which will be triggered when
+      // the current visitor has a valid lock key
+      // If state is 'locked': implement code here which will be
+      // triggered when the current visitor does not have a valid lock key
+    });
+
+    window.unlockProtocol &&
+      window.unlockProtocol.loadCheckoutModal(/* optional configuration*/);
+  }, []);
+
+  useEffect(() => {
     if (params.playbackId) {
       const video = document.getElementById("video");
       const videoSrc = `https://cdn.livepeer.com/hls/${params.playbackId}/index.m3u8`;
